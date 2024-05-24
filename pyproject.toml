@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.11"
 
 [tool.poetry.scripts]
+anki-hanzi = "anki_hanzi.main:main"
 lint = "poetry_scripts:lint"
 format = "poetry_scripts:format"
 
