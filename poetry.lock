@@ -262,6 +262,21 @@ files = [
 ]
 
 [[package]]
+name = "dragonmapper"
+version = "0.2.7"
+description = "Identification and conversion functions for Chinese text processing"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "dragonmapper-0.2.7-py3-none-any.whl", hash = "sha256:7f05ab759244f14f393da814a18cae6ac6efea44686a15c208d239e39e91e9c3"},
+    {file = "dragonmapper-0.2.7.tar.gz", hash = "sha256:9318aecc47afe83b195c2ef5812485b4db86f52e5fe3b1fcb540507bc87f7e80"},
+]
+
+[package.dependencies]
+hanzidentifier = ">=1.2,<2.0"
+zhon = ">=2.0,<3.0"
+
+[[package]]
 name = "flake8"
 version = "7.1.1"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -276,6 +291,20 @@ files = [
 mccabe = ">=0.7.0,<0.8.0"
 pycodestyle = ">=2.12.0,<2.13.0"
 pyflakes = ">=3.2.0,<3.3.0"
+
+[[package]]
+name = "hanzidentifier"
+version = "1.2.0"
+description = "Python module that identifies Chinese text as Simplified or Traditional."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "hanzidentifier-1.2.0-py3-none-any.whl", hash = "sha256:022cbb3aa01ff87b41caa7dbb6e917463a09f399d6d2b9d5499f34d6f6cc1218"},
+    {file = "hanzidentifier-1.2.0.tar.gz", hash = "sha256:8e4198ae87c1da80d77cde46d7e90cb50d1a7561ee8b33e725058a2b0d70e83d"},
+]
+
+[package.dependencies]
+zhon = ">=2.0,<3.0"
 
 [[package]]
 name = "idna"
@@ -641,7 +670,18 @@ h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
+[[package]]
+name = "zhon"
+version = "2.0.2"
+description = "Zhon provides constants used in Chinese text processing."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "zhon-2.0.2-py3-none-any.whl", hash = "sha256:e868e8308766e04866eacf37e8cf054a089d4b07cac62179b03f90a80757afe6"},
+    {file = "zhon-2.0.2.tar.gz", hash = "sha256:c834df6b1b182f7e973e796ded80ed1f61f271fd25f6b0dc0c44f7c4ea467184"},
+]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "7faf55459c4cd41c1fa8a20656ba1ad5e9e0eef04accac76d6921646c5a9cdea"
+content-hash = "2323c25dd8efacf22defa643cf7c19c1ab825e5adb98d58eef12569a4cb1733b"
