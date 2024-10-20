@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+anki = "^24.6.3"
 
 [tool.poetry.scripts]
 anki-hanzi = "anki_hanzi.main:main"

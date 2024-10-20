@@ -21,7 +21,7 @@ def black_format() -> None:
 def flake8() -> None:
     # flake8 cannot be configured in pyproject.toml, so we pass everything we need here.
     # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#minimal-configuration
-    run("poetry", "run", "flake8", "--ignore=E203,E501,E701", *SOURCES)
+    run("poetry", "run", "flake8", "--ignore=E203,E501,E701,E704", *SOURCES)
 
 
 def isort_check() -> None:
