@@ -36,7 +36,7 @@ def transform_field(
 
 
 def process_chinese_vocabulary_note(
-    note: Note, force: bool = False, overwrite_target_field: bool = False
+    note: Note, force: bool = False, overwrite_target_fields: bool = False
 ) -> bool:
     print(f"Processing {note}")
     if not force and note.has_tag(ANKI_HANZI_TAG):
@@ -47,21 +47,21 @@ def process_chinese_vocabulary_note(
         source_field="Word (Traditional Character)",
         target_field="Word (Pinyin)",
         transformation_function=to_pinyin,
-        overwrite_target_field=overwrite_target_field,
+        overwrite_target_field=overwrite_target_fields,
     )
     transform_field(
         note=note,
         source_field="Word (Traditional Character)",
         target_field="Word (Zhuyin)",
         transformation_function=to_zhuyin,
-        overwrite_target_field=overwrite_target_field,
+        overwrite_target_field=overwrite_target_fields,
     )
     transform_field(
         note=note,
         source_field="Example Sentence - Traditional Characters",
         target_field="Example Sentence - Zhuyin",
         transformation_function=to_zhuyin,
-        overwrite_target_field=overwrite_target_field,
+        overwrite_target_field=overwrite_target_fields,
     )
 
     note.add_tag(ANKI_HANZI_TAG)
