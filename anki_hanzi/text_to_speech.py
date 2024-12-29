@@ -1,3 +1,4 @@
+import random
 from pathlib import Path
 from typing import Protocol
 
@@ -21,10 +22,18 @@ class GoogleTextToSpeechSynthesizer(TextToSpeechSynthesizer):
 
     @staticmethod
     def _language_code_to_voice_name(language_code: str) -> str:
-        return {
-            "zh-CN": "cmn-CN-Wavenet-A",
-            "zh-TW": "cmn-TW-Wavenet-A",
+        """Return a random premium voice"""
+        # Standard voices such as cmn-CN-Standard-A are not included here.
+        candidates = {
+            "zh-CN": [
+                "cmn-CN-Wavenet-A",
+                "cmn-CN-Wavenet-B",
+                "cmn-CN-Wavenet-C",
+                "cmn-CN-Wavenet-D",
+            ],
+            "zh-TW": ["cmn-TW-Wavenet-A", "cmn-TW-Wavenet-B", "cmn-TW-Wavenet-C"],
         }[language_code]
+        return random.choice(candidates)
 
     @staticmethod
     def _get_voice(language: Language) -> googletts.VoiceSelectionParams:
