@@ -1,7 +1,10 @@
+from functools import partial
 from typing import Callable
 
 from anki.notes import Note
 from dragonmapper import hanzi  # type: ignore
+
+from anki_hanzi.translation import Translator
 
 ANKI_HANZI_TAG = "anki-hanzi"
 
@@ -36,11 +39,53 @@ def transform_field(
 
 
 def process_chinese_vocabulary_note(
-    note: Note, force: bool = False, overwrite_target_fields: bool = False
+    note: Note,
+    translator: Translator,
+    force: bool = False,
+    overwrite_target_fields: bool = False,
 ) -> bool:
     if not force and note.has_tag(ANKI_HANZI_TAG):
         return False
 
+    simplified_to_traditional = partial(
+        translator.translate,
+        source_language="Chinese_Simplified",
+        target_language="Chinese_Traditional",
+    )
+    traditional_to_simplified = partial(
+        translator.translate,
+        source_language="Chinese_Traditional",
+        target_language="Chinese_Simplified",
+    )
+
+    transform_field(
+        note=note,
+        source_field="Word (Character)",
+        target_field="Word (Traditional Character)",
+        transformation_function=simplified_to_traditional,
+        overwrite_target_field=overwrite_target_fields,
+    )
+    transform_field(
+        note=note,
+        source_field="Word (Traditional Character)",
+        target_field="Word (Character)",
+        transformation_function=traditional_to_simplified,
+        overwrite_target_field=overwrite_target_fields,
+    )
+    transform_field(
+        note=note,
+        source_field="Example Sentence - Characters",
+        target_field="Example Sentence - Traditional Characters",
+        transformation_function=simplified_to_traditional,
+        overwrite_target_field=overwrite_target_fields,
+    )
+    transform_field(
+        note=note,
+        source_field="Example Sentence - Traditional Characters",
+        target_field="Example Sentence - Characters",
+        transformation_function=traditional_to_simplified,
+        overwrite_target_field=overwrite_target_fields,
+    )
     transform_field(
         note=note,
         source_field="Word (Traditional Character)",
