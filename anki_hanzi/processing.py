@@ -134,6 +134,11 @@ def process_chinese_vocabulary_note(
     )
     transform(
         source_field="Example Sentence - Traditional Characters",
+        target_field="Example Sentence - Pinyin",
+        transformation_function=to_pinyin,
+    )
+    transform(
+        source_field="Example Sentence - Traditional Characters",
         target_field="Example Sentence - Zhuyin",
         transformation_function=to_zhuyin,
     )
