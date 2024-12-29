@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Protocol
 
 from google.cloud import texttospeech as googletts
 from google.oauth2 import service_account
 
-Language = Literal["Chinese_Simplified", "Chinese_Traditional"]
+from anki_hanzi.language import Language
 
 
 class TextToSpeechSynthesizer(Protocol):
@@ -26,7 +26,7 @@ class GoogleTextToSpeechSynthesizer(TextToSpeechSynthesizer):
         self._client = googletts.TextToSpeechClient(credentials=credentials)
 
     @staticmethod
-    def _language_to_google_language_code(language: str) -> str:
+    def _language_to_google_language_code(language: Language) -> str:
         return {
             "Chinese_Simplified": "zh-CN",
             "Chinese_Traditional": "zh-TW",

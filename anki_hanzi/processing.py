@@ -5,7 +5,8 @@ from anki.notes import Note
 from dragonmapper import hanzi  # type: ignore
 
 from anki_hanzi.anki_client import AnkiClient
-from anki_hanzi.text_to_speech import Language, TextToSpeechSynthesizer
+from anki_hanzi.language import Language
+from anki_hanzi.text_to_speech import TextToSpeechSynthesizer
 from anki_hanzi.translation import Translator
 
 ANKI_HANZI_TAG = "anki-hanzi"
