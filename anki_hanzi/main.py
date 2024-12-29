@@ -6,7 +6,8 @@ from anki_hanzi.processing import process_chinese_vocabulary_note
 
 parser = ArgumentParser()
 parser.add_argument(
-    "--anki_credentials",
+    "--anki-credentials",
+    dest="anki_credentials",
     type=Path,
     default=Path.home() / ".config/anki-hanzi/anki-credentials.txt",
     help="Text file containing Anki sync server username on first line and password on second line",
@@ -23,7 +24,9 @@ parser.add_argument(
     help="Overwrite target fields even if they have a non-empty value already",
 )
 parser.add_argument(
-    "collection_path", type=Path, help="Location where the local collection is stored"
+    "anki_collection_path",
+    type=Path,
+    help="Location where the local Anki collection is stored",
 )
 
 
@@ -47,13 +50,13 @@ def parse_anki_credentials(anki_credentials: Path) -> tuple[str, str]:
 
 
 def run(
-    username: str,
-    password: str,
-    collection_path: Path,
+    anki_username: str,
+    anki_password: str,
+    anki_collection_path: Path,
     force: bool,
     overwrite_target_fields: bool,
 ) -> None:
-    anki = AnkiClientImpl(collection_path, username, password)
+    anki = AnkiClientImpl(anki_collection_path, anki_username, anki_password)
     anki.sync()
     process_chinese_vocabulary(
         anki=anki, force=force, overwrite_target_fields=overwrite_target_fields
@@ -63,11 +66,11 @@ def run(
 
 def main() -> None:
     args = parser.parse_args()
-    username, password = parse_anki_credentials(args.anki_credentials)
+    anki_username, anki_password = parse_anki_credentials(args.anki_credentials)
     run(
-        username,
-        password,
-        args.collection_path,
+        anki_username,
+        anki_password,
+        args.anki_collection_path,
         args.force,
         args.overwrite_target_fields,
     )
