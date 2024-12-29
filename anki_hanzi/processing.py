@@ -4,6 +4,8 @@ from typing import Callable
 from anki.notes import Note
 from dragonmapper import hanzi  # type: ignore
 
+from anki_hanzi.anki_client import AnkiClient
+from anki_hanzi.text_to_speech import Language, TextToSpeechSynthesizer
 from anki_hanzi.translation import Translator
 
 ANKI_HANZI_TAG = "anki-hanzi"
@@ -15,6 +17,21 @@ def to_pinyin(text: str) -> str:
 
 def to_zhuyin(text: str) -> str:
     return hanzi.to_zhuyin(text)  # type: ignore
+
+
+def synthesize(
+    text: str,
+    anki: AnkiClient,
+    synthesizer: TextToSpeechSynthesizer,
+    language: Language,
+    overwrite_target_field: bool,
+) -> str:
+    mp3 = synthesizer.synthesize_mp3(text, language)
+    file_name = f"{text}.mp3"
+    if overwrite_target_field and anki.media_file_exists(file_name):
+        anki.delete_media_file(file_name)
+    anki.add_media_file(file_name, mp3)
+    return f"[sound:{file_name}]"
 
 
 def transform_field(
@@ -40,7 +57,9 @@ def transform_field(
 
 def process_chinese_vocabulary_note(
     note: Note,
+    anki: AnkiClient,
     translator: Translator,
+    tts_synthesizer: TextToSpeechSynthesizer,
     force: bool = False,
     overwrite_target_fields: bool = False,
 ) -> bool:
@@ -56,6 +75,13 @@ def process_chinese_vocabulary_note(
         translator.translate,
         source_language="Chinese_Traditional",
         target_language="Chinese_Simplified",
+    )
+    synthesize_simplified = partial(
+        synthesize,
+        anki=anki,
+        synthesizer=tts_synthesizer,
+        language="Chinese_Simplified",
+        overwrite_target_field=overwrite_target_fields,
     )
 
     transform_field(
@@ -105,6 +131,20 @@ def process_chinese_vocabulary_note(
         source_field="Example Sentence - Traditional Characters",
         target_field="Example Sentence - Zhuyin",
         transformation_function=to_zhuyin,
+        overwrite_target_field=overwrite_target_fields,
+    )
+    transform_field(
+        note=note,
+        source_field="Word (Character)",
+        target_field="Generated Speech",
+        transformation_function=synthesize_simplified,
+        overwrite_target_field=overwrite_target_fields,
+    )
+    transform_field(
+        note=note,
+        source_field="Example Sentence - Characters",
+        target_field="Example Sentence - Generated  Speech",
+        transformation_function=synthesize_simplified,
         overwrite_target_field=overwrite_target_fields,
     )
 

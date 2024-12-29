@@ -5,6 +5,10 @@ from typing import NamedTuple
 
 from anki_hanzi.anki_client import AnkiClient, AnkiClientImpl
 from anki_hanzi.processing import process_chinese_vocabulary_note
+from anki_hanzi.text_to_speech import (
+    GoogleTextToSpeechSynthesizer,
+    TextToSpeechSynthesizer,
+)
 from anki_hanzi.translation import GoogleTranslator, Translator
 
 logging.basicConfig(level=logging.INFO)
@@ -57,6 +61,7 @@ def process_chinese_vocabulary(
     anki: AnkiClient,
     deck_name: str,
     translator: Translator,
+    tts_synthesizer: TextToSpeechSynthesizer,
     force: bool,
     overwrite_target_fields: bool,
 ) -> ProcessingStats:
@@ -67,7 +72,9 @@ def process_chinese_vocabulary(
         total += 1
         note_modified = process_chinese_vocabulary_note(
             note=note,
+            anki=anki,
             translator=translator,
+            tts_synthesizer=tts_synthesizer,
             force=force,
             overwrite_target_fields=overwrite_target_fields,
         )
@@ -101,11 +108,15 @@ def run(
     translator = GoogleTranslator(
         application_credentials=google_application_credentials
     )
+    tts_synthesizer = GoogleTextToSpeechSynthesizer(
+        application_credentials=google_application_credentials
+    )
     anki.sync()
     total, modified = process_chinese_vocabulary(
         anki=anki,
         deck_name=deck_name,
         translator=translator,
+        tts_synthesizer=tts_synthesizer,
         force=force,
         overwrite_target_fields=overwrite_target_fields,
     )
