@@ -66,6 +66,14 @@ class AnkiClientImpl(AnkiClient):
 
         # write_media will just rename the file if it already exists and write it somewhere else
         # Be a bit more cautious here and error out if the file already exists.
-        assert not self.media_file_exists(file_name)
+        if self.media_file_exists(file_name):
+            raise AnkiClientException(
+                f"Requested media file already exists: {file_name}"
+            )
+
         actual_file_name = self._collection.media.write_data(file_name, data)
-        assert actual_file_name == file_name
+
+        if actual_file_name != file_name:
+            raise AnkiClientException(
+                f"Actual file name not equal despite requested file name not existing. Requested: {file_name} Actual: {actual_file_name}"
+            )
