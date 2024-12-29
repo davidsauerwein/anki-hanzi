@@ -27,6 +27,7 @@ def synthesize(
     language: Language,
     overwrite_target_field: bool,
 ) -> str:
+    text = text.strip()
     mp3 = synthesizer.synthesize_mp3(text, language)
     file_name = f"{text}.mp3"
     if overwrite_target_field and anki.media_file_exists(file_name):
