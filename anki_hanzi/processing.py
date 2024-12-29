@@ -66,6 +66,10 @@ def process_chinese_vocabulary_note(
     if not force and note.has_tag(ANKI_HANZI_TAG):
         return False
 
+    transform = partial(
+        transform_field, note=note, overwrite_target_field=overwrite_target_fields
+    )
+
     simplified_to_traditional = partial(
         translator.translate,
         source_language="Chinese_Simplified",
@@ -84,68 +88,50 @@ def process_chinese_vocabulary_note(
         overwrite_target_field=overwrite_target_fields,
     )
 
-    transform_field(
-        note=note,
+    transform(
         source_field="Word (Character)",
         target_field="Word (Traditional Character)",
         transformation_function=simplified_to_traditional,
-        overwrite_target_field=overwrite_target_fields,
     )
-    transform_field(
-        note=note,
+    transform(
         source_field="Word (Traditional Character)",
         target_field="Word (Character)",
         transformation_function=traditional_to_simplified,
-        overwrite_target_field=overwrite_target_fields,
     )
-    transform_field(
-        note=note,
+    transform(
         source_field="Example Sentence - Characters",
         target_field="Example Sentence - Traditional Characters",
         transformation_function=simplified_to_traditional,
-        overwrite_target_field=overwrite_target_fields,
     )
-    transform_field(
-        note=note,
+    transform(
         source_field="Example Sentence - Traditional Characters",
         target_field="Example Sentence - Characters",
         transformation_function=traditional_to_simplified,
-        overwrite_target_field=overwrite_target_fields,
     )
-    transform_field(
-        note=note,
+    transform(
         source_field="Word (Traditional Character)",
         target_field="Word (Pinyin)",
         transformation_function=to_pinyin,
-        overwrite_target_field=overwrite_target_fields,
     )
-    transform_field(
-        note=note,
+    transform(
         source_field="Word (Traditional Character)",
         target_field="Word (Zhuyin)",
         transformation_function=to_zhuyin,
-        overwrite_target_field=overwrite_target_fields,
     )
-    transform_field(
-        note=note,
+    transform(
         source_field="Example Sentence - Traditional Characters",
         target_field="Example Sentence - Zhuyin",
         transformation_function=to_zhuyin,
-        overwrite_target_field=overwrite_target_fields,
     )
-    transform_field(
-        note=note,
+    transform(
         source_field="Word (Character)",
         target_field="Generated Speech",
         transformation_function=synthesize_simplified,
-        overwrite_target_field=overwrite_target_fields,
     )
-    transform_field(
-        note=note,
+    transform(
         source_field="Example Sentence - Characters",
         target_field="Example Sentence - Generated  Speech",
         transformation_function=synthesize_simplified,
-        overwrite_target_field=overwrite_target_fields,
     )
 
     note.add_tag(ANKI_HANZI_TAG)
