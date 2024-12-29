@@ -1,10 +1,9 @@
-import json
 from pathlib import Path
 from typing import Protocol
 
 from google.cloud import translate_v3
-from google.oauth2 import service_account
 
+from anki_hanzi.google_cloud import language_to_google_language_code, parse_credentials
 from anki_hanzi.language import Language
 
 
@@ -19,20 +18,8 @@ class GoogleTranslator(Translator):
     _project_id: str
 
     def __init__(self, application_credentials: Path):
-        with open(application_credentials) as f:
-            application_config = json.load(f)
-        self._project_id = application_config["project_id"]
-        credentials = service_account.Credentials.from_service_account_file(
-            application_credentials  # type: ignore
-        )
+        credentials, self._project_id = parse_credentials(application_credentials)
         self._client = translate_v3.TranslationServiceClient(credentials=credentials)
-
-    @staticmethod
-    def _language_to_google_language_code(language: Language) -> str:
-        return {
-            "Chinese_Simplified": "zh-CN",
-            "Chinese_Traditional": "zh-TW",
-        }[language]
 
     def translate(
         self, text: str, source_language: Language, target_language: Language
@@ -40,11 +27,7 @@ class GoogleTranslator(Translator):
         result = self._client.translate_text(
             parent=f"projects/{self._project_id}",
             contents=[text],
-            source_language_code=GoogleTranslator._language_to_google_language_code(
-                source_language
-            ),
-            target_language_code=GoogleTranslator._language_to_google_language_code(
-                target_language
-            ),
+            source_language_code=language_to_google_language_code(source_language),
+            target_language_code=language_to_google_language_code(target_language),
         )
         return result.translations[0].translated_text

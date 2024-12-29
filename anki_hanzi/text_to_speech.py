@@ -1,10 +1,9 @@
-import json
 from pathlib import Path
 from typing import Protocol
 
 from google.cloud import texttospeech as googletts
-from google.oauth2 import service_account
 
+from anki_hanzi.google_cloud import language_to_google_language_code, parse_credentials
 from anki_hanzi.language import Language
 
 
@@ -17,20 +16,8 @@ class GoogleTextToSpeechSynthesizer(TextToSpeechSynthesizer):
     _project_id: str
 
     def __init__(self, application_credentials: Path):
-        with open(application_credentials) as f:
-            application_config = json.load(f)
-        self._project_id = application_config["project_id"]
-        credentials = service_account.Credentials.from_service_account_file(
-            application_credentials  # type: ignore
-        )
+        credentials, self._project_id = parse_credentials(application_credentials)
         self._client = googletts.TextToSpeechClient(credentials=credentials)
-
-    @staticmethod
-    def _language_to_google_language_code(language: Language) -> str:
-        return {
-            "Chinese_Simplified": "zh-CN",
-            "Chinese_Traditional": "zh-TW",
-        }[language]
 
     @staticmethod
     def _language_code_to_voice_name(language_code: str) -> str:
@@ -41,9 +28,7 @@ class GoogleTextToSpeechSynthesizer(TextToSpeechSynthesizer):
 
     @staticmethod
     def _get_voice(language: Language) -> googletts.VoiceSelectionParams:
-        language_code = GoogleTextToSpeechSynthesizer._language_to_google_language_code(
-            language
-        )
+        language_code = language_to_google_language_code(language)
         voice_name = GoogleTextToSpeechSynthesizer._language_code_to_voice_name(
             language_code
         )
