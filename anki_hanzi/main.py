@@ -36,12 +36,21 @@ parser.add_argument(
     type=Path,
     help="Location where the local Anki collection is stored",
 )
+parser.add_argument(
+    "deck_name",
+    type=str,
+    help="Name of the deck to process",
+)
 
 
 def process_chinese_vocabulary(
-    anki: AnkiClient, translator: Translator, force: bool, overwrite_target_fields: bool
+    anki: AnkiClient,
+    deck_name: str,
+    translator: Translator,
+    force: bool,
+    overwrite_target_fields: bool,
 ) -> None:
-    for note in anki.notes_in_deck("test"):
+    for note in anki.notes_in_deck(deck_name):
         process_chinese_vocabulary_note(
             note=note,
             translator=translator,
@@ -64,6 +73,7 @@ def run(
     anki_username: str,
     anki_password: str,
     anki_collection_path: Path,
+    deck_name: str,
     google_application_credentials: Path,
     force: bool,
     overwrite_target_fields: bool,
@@ -75,6 +85,7 @@ def run(
     anki.sync()
     process_chinese_vocabulary(
         anki=anki,
+        deck_name=deck_name,
         translator=translator,
         force=force,
         overwrite_target_fields=overwrite_target_fields,
@@ -89,6 +100,7 @@ def main() -> None:
         anki_username,
         anki_password,
         args.anki_collection_path,
+        args.deck_name,
         args.google_application_credentials,
         args.force,
         args.overwrite_target_fields,
