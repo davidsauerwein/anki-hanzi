@@ -13,6 +13,12 @@ class AnkiClient(Protocol):
 
     def update_note(self, note: Note) -> None: ...
 
+    def media_file_exists(self, file_name: str) -> bool: ...
+
+    def delete_media_file(self, file_name: str) -> None: ...
+
+    def add_media_file(self, file_name: str, data: bytes) -> None: ...
+
 
 class AnkiClientException(Exception):
     pass
@@ -49,3 +55,17 @@ class AnkiClientImpl(AnkiClient):
 
     def update_note(self, note: Note) -> None:
         self._collection.update_note(note)
+
+    def media_file_exists(self, file_name: str) -> bool:
+        return self._collection.media.have(file_name)
+
+    def delete_media_file(self, file_name: str) -> None:
+        self._collection.media.trash_files([file_name])
+
+    def add_media_file(self, file_name: str, data: bytes) -> None:
+
+        # write_media will just rename the file if it already exists and write it somewhere else
+        # Be a bit more cautious here and error out if the file already exists.
+        assert not self.media_file_exists(file_name)
+        actual_file_name = self._collection.media.write_data(file_name, data)
+        assert actual_file_name == file_name
