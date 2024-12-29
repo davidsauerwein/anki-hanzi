@@ -1,9 +1,14 @@
+import logging
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import NamedTuple
 
 from anki_hanzi.anki_client import AnkiClient, AnkiClientImpl
 from anki_hanzi.processing import process_chinese_vocabulary_note
 from anki_hanzi.translation import GoogleTranslator, Translator
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 parser = ArgumentParser()
 parser.add_argument(
@@ -43,21 +48,35 @@ parser.add_argument(
 )
 
 
+class ProcessingStats(NamedTuple):
+    total: int
+    modified: int
+
+
 def process_chinese_vocabulary(
     anki: AnkiClient,
     deck_name: str,
     translator: Translator,
     force: bool,
     overwrite_target_fields: bool,
-) -> None:
+) -> ProcessingStats:
+    total = 0
+    modified = 0
+
     for note in anki.notes_in_deck(deck_name):
-        process_chinese_vocabulary_note(
+        total += 1
+        note_modified = process_chinese_vocabulary_note(
             note=note,
             translator=translator,
             force=force,
             overwrite_target_fields=overwrite_target_fields,
         )
-        anki.update_note(note)
+
+        if note_modified:
+            anki.update_note(note)
+            modified += 1
+
+    return ProcessingStats(total, modified)
 
 
 def parse_anki_credentials(anki_credentials: Path) -> tuple[str, str]:
@@ -83,7 +102,7 @@ def run(
         application_credentials=google_application_credentials
     )
     anki.sync()
-    process_chinese_vocabulary(
+    total, modified = process_chinese_vocabulary(
         anki=anki,
         deck_name=deck_name,
         translator=translator,
@@ -91,6 +110,8 @@ def run(
         overwrite_target_fields=overwrite_target_fields,
     )
     anki.sync()
+
+    logger.info(f"Success: {modified} / {total} notes modified.")
 
 
 def main() -> None:
