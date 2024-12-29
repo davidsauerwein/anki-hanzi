@@ -20,6 +20,12 @@ def to_zhuyin(text: str) -> str:
     return hanzi.to_zhuyin(text)  # type: ignore
 
 
+def to_tones(text: str) -> str:
+    numbered_pinyin: str = hanzi.to_pinyin(text, accented=False)
+    tones = [char for char in numbered_pinyin if char.isdigit()]
+    return "".join(tones)
+
+
 def synthesize(
     text: str,
     anki: AnkiClient,
@@ -134,6 +140,11 @@ def process_chinese_vocabulary_note(
         source_field="Example Sentence - Characters",
         target_field="Example Sentence - Generated  Speech",
         transformation_function=synthesize_simplified,
+    )
+    transform(
+        source_field="Word (Character)",
+        target_field="Word (Tone numbers)",
+        transformation_function=to_tones,
     )
 
     note.add_tag(ANKI_HANZI_TAG)
