@@ -102,61 +102,62 @@ def process_chinese_vocabulary_note(
         overwrite_target_field=overwrite_target_fields,
     )
 
-    transform(
+    modified = False
+    modified |= transform(
         source_field="Word (Character)",
         target_field="Word (Traditional Character)",
         transformation_function=simplified_to_traditional,
     )
-    transform(
+    modified |= transform(
         source_field="Word (Traditional Character)",
         target_field="Word (Character)",
         transformation_function=traditional_to_simplified,
     )
-    transform(
+    modified |= transform(
         source_field="Example Sentence - Characters",
         target_field="Example Sentence - Traditional Characters",
         transformation_function=simplified_to_traditional,
     )
-    transform(
+    modified |= transform(
         source_field="Example Sentence - Traditional Characters",
         target_field="Example Sentence - Characters",
         transformation_function=traditional_to_simplified,
     )
-    transform(
+    modified |= transform(
         source_field="Word (Traditional Character)",
         target_field="Word (Pinyin)",
         transformation_function=to_pinyin,
     )
-    transform(
+    modified |= transform(
         source_field="Word (Traditional Character)",
         target_field="Word (Zhuyin)",
         transformation_function=to_zhuyin,
     )
-    transform(
+    modified |= transform(
         source_field="Example Sentence - Traditional Characters",
         target_field="Example Sentence - Pinyin",
         transformation_function=to_pinyin,
     )
-    transform(
+    modified |= transform(
         source_field="Example Sentence - Traditional Characters",
         target_field="Example Sentence - Zhuyin",
         transformation_function=to_zhuyin,
     )
-    transform(
+    modified |= transform(
         source_field="Word (Character)",
         target_field="Generated Speech",
         transformation_function=synthesize_simplified,
     )
-    transform(
+    modified |= transform(
         source_field="Example Sentence - Characters",
         target_field="Example Sentence - Generated  Speech",
         transformation_function=synthesize_simplified,
     )
-    transform(
+    modified |= transform(
         source_field="Word (Character)",
         target_field="Word (Tone numbers)",
         transformation_function=to_tones,
     )
 
     note.add_tag(ANKI_HANZI_TAG)
-    return True
+    return modified
