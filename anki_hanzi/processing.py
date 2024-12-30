@@ -66,7 +66,7 @@ def transform_field(
         return False
 
     note[target_field] = transformation_function(note[source_field])
-    return False
+    return True
 
 
 def process_chinese_vocabulary_note(
