@@ -1,9 +1,24 @@
+import os
+import sys
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterable, Protocol
+from typing import Iterable, Iterator, Protocol
 
 from anki.collection import Collection
 from anki.notes import Note
 from anki.sync import SyncAuth
+
+
+@contextmanager
+def suppress_stdout() -> Iterator[None]:
+    """Redirect stdout to devnull while this context manager is active."""
+    original_stdout = sys.stdout
+    with open(os.devnull, "w") as devnull:
+        sys.stdout = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = original_stdout
 
 
 class AnkiClient(Protocol):
@@ -30,12 +45,22 @@ class AnkiClientImpl(AnkiClient):
 
     def __init__(self, collection_path: Path, username: str, password: str):
         self._collection = Collection(path=str(collection_path))
-        self._auth = self._collection.sync_login(
-            username=username, password=password, endpoint="https://sync.ankiweb.net/"
-        )
+        with suppress_stdout():
+            # This function is very noisy. It prints stacks traces on stdout just because some function call takes
+            # longer than 100 ms. This is nothing we care about. For lack of a better mechanism to control these logs,
+            # completely silence all writes to stdout preformed by this function.
+            self._auth = self._collection.sync_login(
+                username=username,
+                password=password,
+                endpoint="https://sync.ankiweb.net/",
+            )
 
     def sync(self) -> None:
-        sync_result = self._collection.sync_collection(auth=self._auth, sync_media=True)
+        with suppress_stdout():
+            # This function is very noisy, just like self._collection.sync_login()
+            sync_result = self._collection.sync_collection(
+                auth=self._auth, sync_media=True
+            )
         if sync_result.required != sync_result.NO_CHANGES:
             # From what I have observed this returns NO_CHANGES on every regular sync.
             # Was not able to figure out how to make an initial download with collection.full_download_or_upload() work.
