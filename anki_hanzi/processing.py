@@ -4,7 +4,7 @@ from typing import Callable
 from anki.notes import Note
 from dragonmapper import hanzi  # type: ignore
 
-from anki_hanzi.anki_client import AnkiClient
+from anki_hanzi.anki_client import AnkiClient, escape_media_file_name
 from anki_hanzi.language import Language
 from anki_hanzi.text_to_speech import TextToSpeechSynthesizer
 from anki_hanzi.translation import Translator
@@ -35,6 +35,7 @@ def synthesize(
 ) -> str:
     text = text.strip()
     file_name = f"{text}.mp3"
+    file_name = escape_media_file_name(file_name)
     result = f"[sound:{file_name}]"
 
     if anki.media_file_exists(file_name):

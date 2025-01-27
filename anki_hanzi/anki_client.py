@@ -39,6 +39,10 @@ class AnkiClientException(Exception):
     pass
 
 
+def escape_media_file_name(file_name: str) -> str:
+    return file_name.strip().replace("?", "")
+
+
 class AnkiClientImpl(AnkiClient):
     _auth: SyncAuth
     _collection: Collection
