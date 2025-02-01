@@ -11,6 +11,7 @@ anki = "^24.6.3"
 dragonmapper = "^0.2.7"
 google-cloud-translate = "^3.18.0"
 google-cloud-texttospeech = "^2.23.0"
+tenacity = "^9.0.0"
 
 [tool.poetry.scripts]
 anki-hanzi = "anki_hanzi.main:main"

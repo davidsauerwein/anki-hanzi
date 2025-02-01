@@ -1,12 +1,17 @@
+import logging
 import os
 import sys
 from contextlib import contextmanager
+from datetime import timedelta
 from pathlib import Path
 from typing import Iterable, Iterator, Protocol
 
 from anki.collection import Collection
 from anki.notes import Note
 from anki.sync import SyncAuth
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+logger = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -43,6 +48,10 @@ def escape_media_file_name(file_name: str) -> str:
     return file_name.strip().replace("?", "")
 
 
+class MediaSyncInProgressException(Exception):
+    pass
+
+
 class AnkiClientImpl(AnkiClient):
     _auth: SyncAuth
     _collection: Collection
@@ -59,6 +68,16 @@ class AnkiClientImpl(AnkiClient):
                 endpoint="https://sync.ankiweb.net/",
             )
 
+    @retry(
+        wait=wait_exponential(min=timedelta(seconds=1), max=timedelta(seconds=30)),
+        stop=stop_after_attempt(50),
+    )
+    def wait_for_media_sync(self) -> None:
+        # If still active raise and let tenacity handle the retries
+        # After 50 attempts we abort
+        if self._collection.media_sync_status().active:
+            raise MediaSyncInProgressException()
+
     def sync(self) -> None:
         with suppress_stdout():
             # This function is very noisy, just like self._collection.sync_login()
@@ -71,6 +90,10 @@ class AnkiClientImpl(AnkiClient):
             raise AnkiClientException(
                 f"Unexpected or unsupported sync result: {sync_result}"
             )
+
+        # Media is synced in the background. That means that the call to sync_collection started the media sync, but
+        # there is no guarantee it has actually completed. Wait until the sync is done.
+        self.wait_for_media_sync()
 
     def deck_exists(self, deck: str) -> bool:
         return self._collection.decks.by_name(deck) is not None
