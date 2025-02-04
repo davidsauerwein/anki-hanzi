@@ -53,19 +53,29 @@ class MediaSyncInProgressException(Exception):
 
 
 class AnkiClientImpl(AnkiClient):
+    _username: str
+    _password: str
     _auth: SyncAuth
     _collection: Collection
 
     def __init__(self, collection_path: Path, username: str, password: str):
+        # This also works if the file does not exist, yet. The constructor will set up an empty database.
+        # The initial sync/download is handled by sync()
         self._collection = Collection(path=str(collection_path))
+
+        self._username = username
+        self._password = password
+        self.init_auth()
+
+    def init_auth(self, endpoint: str = "https://sync.ankiweb.net/") -> None:
         with suppress_stdout():
             # This function is very noisy. It prints stacks traces on stdout just because some function call takes
             # longer than 100 ms. This is nothing we care about. For lack of a better mechanism to control these logs,
             # completely silence all writes to stdout preformed by this function.
             self._auth = self._collection.sync_login(
-                username=username,
-                password=password,
-                endpoint="https://sync.ankiweb.net/",
+                username=self._username,
+                password=self._password,
+                endpoint=endpoint,
             )
 
     @retry(
@@ -84,9 +94,29 @@ class AnkiClientImpl(AnkiClient):
             sync_result = self._collection.sync_collection(
                 auth=self._auth, sync_media=True
             )
-        if sync_result.required != sync_result.NO_CHANGES:
-            # From what I have observed this returns NO_CHANGES on every regular sync.
-            # Was not able to figure out how to make an initial download with collection.full_download_or_upload() work.
+
+        if sync_result.required == sync_result.FULL_DOWNLOAD:
+            # Initial sync. Download everything.
+
+            # We need to re-initialize the auth object using the new endpoint, otherwise we get 400 responses saying
+            # "missing original size".
+            # See Anki-Android who ran into the same problem:
+            # - Issue: https://github.com/ankidroid/Anki-Android/issues/14219
+            # - Fix: https://github.com/ankidroid/Anki-Android/pull/14935/commits/f90c1d87ddb5aaa23fa89ee28bca5335ff673971
+            assert sync_result.new_endpoint
+            self.init_auth(sync_result.new_endpoint)
+
+            self._collection.close_for_full_sync()
+            with suppress_stdout():
+                self._collection.full_upload_or_download(
+                    auth=self._auth,
+                    server_usn=sync_result.server_media_usn,
+                    upload=False,
+                )
+            self._collection.reopen(after_full_sync=True)
+        elif sync_result.required != sync_result.NO_CHANGES:
+            # From what I have observed this returns NO_CHANGES on every regular sync. Anything else means conflicts
+            # which cannot be resolved here.
             raise AnkiClientException(
                 f"Unexpected or unsupported sync result: {sync_result}"
             )
