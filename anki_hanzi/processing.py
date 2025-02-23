@@ -95,6 +95,11 @@ def process_chinese_vocabulary_note(
         source_language="Chinese_Traditional",
         target_language="Chinese_Simplified",
     )
+    traditional_to_english = partial(
+        translator.translate,
+        source_language="Chinese_Traditional",
+        target_language="English",
+    )
     synthesize_simplified = partial(
         synthesize,
         anki=anki,
@@ -133,6 +138,11 @@ def process_chinese_vocabulary_note(
         source_field="Word (Traditional Character)",
         target_field="Word (Zhuyin)",
         transformation_function=to_zhuyin,
+    )
+    modified |= transform(
+        source_field="Example Sentence - Traditional Characters",
+        target_field="Example Sentence - English",
+        transformation_function=traditional_to_english,
     )
     modified |= transform(
         source_field="Example Sentence - Traditional Characters",

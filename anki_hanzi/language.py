@@ -1,3 +1,3 @@
 from typing import Literal
 
-Language = Literal["Chinese_Simplified", "Chinese_Traditional"]
+Language = Literal["Chinese_Simplified", "Chinese_Traditional", "English"]

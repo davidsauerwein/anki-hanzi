@@ -23,4 +23,5 @@ def language_to_google_language_code(language: Language) -> str:
     return {
         "Chinese_Simplified": "zh-CN",
         "Chinese_Traditional": "zh-TW",
+        "English": "en",
     }[language]
