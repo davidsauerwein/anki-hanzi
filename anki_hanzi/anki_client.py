@@ -97,6 +97,9 @@ class AnkiClientImpl(AnkiClient):
 
         if sync_result.required == sync_result.FULL_DOWNLOAD:
             # Initial sync. Download everything.
+            logger.info(
+                "Performing initial sync (full download). This may take a while depending on how much media your collection has."
+            )
 
             # We need to re-initialize the auth object using the new endpoint, otherwise we get 400 responses saying
             # "missing original size".
