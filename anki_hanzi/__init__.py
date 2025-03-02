@@ -1,3 +1,3 @@
-from .main import run
+from .main import AnkiDeckNotFoundException, run
 
-__all__ = ["run"]
+__all__ = ["run", "AnkiDeckNotFoundException"]

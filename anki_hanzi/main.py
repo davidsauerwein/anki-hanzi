@@ -102,6 +102,10 @@ def parse_anki_credentials(anki_credentials: Path) -> tuple[str, str]:
     return username, password
 
 
+class AnkiDeckNotFoundException(Exception):
+    pass
+
+
 def run(
     anki_username: str,
     anki_password: str,
@@ -114,7 +118,12 @@ def run(
     anki = AnkiClientImpl(anki_collection_path, anki_username, anki_password)
     translator = GoogleTranslator(google_cloud_project_id)
     tts_synthesizer = GoogleTextToSpeechSynthesizer(google_cloud_project_id)
+
     anki.sync()
+
+    if not anki.deck_exists(deck_name):
+        raise AnkiDeckNotFoundException()
+
     stats = process_chinese_vocabulary(
         anki=anki,
         deck_name=deck_name,
@@ -123,6 +132,7 @@ def run(
         force=force,
         overwrite_target_fields=overwrite_target_fields,
     )
+
     anki.sync()
 
     logger.info(f"Success: {stats['modified']} / {stats['total']} notes modified.")
