@@ -1,8 +1,10 @@
 import logging
+import os
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import TypedDict
 
+from anki_hanzi import google_cloud
 from anki_hanzi.anki_client import AnkiClient, AnkiClientImpl
 from anki_hanzi.processing import process_chinese_vocabulary_note
 from anki_hanzi.text_to_speech import (
@@ -22,12 +24,14 @@ parser.add_argument(
     default=Path.home() / ".config/anki-hanzi/anki-credentials.txt",
     help="Text file containing Anki sync server username on first line and password on second line",
 )
+google_application_credentials_default_path = (
+    Path.home() / ".config/anki-hanzi/google-application-credentials.json"
+)
 parser.add_argument(
     "--google-application-credentials",
     dest="google_application_credentials",
     type=Path,
-    default=Path.home() / ".config/anki-hanzi/google-application-credentials.json",
-    help="Location of Google Service Account file",
+    help=f"Location of Google Service Account file. If not provided the file specified by GOOGLE_APPLICATION_CREDENTIALS is used. If the variable does not exist either, {google_application_credentials_default_path} is used.",
 )
 parser.add_argument(
     "--force",
@@ -103,17 +107,13 @@ def run(
     anki_password: str,
     anki_collection_path: Path,
     deck_name: str,
-    google_application_credentials: Path,
+    google_cloud_project_id: str,
     force: bool,
     overwrite_target_fields: bool,
 ) -> ProcessingStats:
     anki = AnkiClientImpl(anki_collection_path, anki_username, anki_password)
-    translator = GoogleTranslator(
-        application_credentials=google_application_credentials
-    )
-    tts_synthesizer = GoogleTextToSpeechSynthesizer(
-        application_credentials=google_application_credentials
-    )
+    translator = GoogleTranslator(google_cloud_project_id)
+    tts_synthesizer = GoogleTextToSpeechSynthesizer(google_cloud_project_id)
     anki.sync()
     stats = process_chinese_vocabulary(
         anki=anki,
@@ -132,12 +132,26 @@ def run(
 def main() -> None:
     args = parser.parse_args()
     anki_username, anki_password = parse_anki_credentials(args.anki_credentials)
+
+    if args.google_application_credentials is not None:
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
+            args.google_application_credentials
+        )
+    elif os.getenv("GOOGLE_APPLICATION_CREDENTIALS") is None:
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
+            google_application_credentials_default_path
+        )
+
+    google_cloud_project_id = google_cloud.project_id_from_application_credentials(
+        Path(os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
+    )
+
     run(
         anki_username,
         anki_password,
         args.anki_collection_path,
         args.deck_name,
-        args.google_application_credentials,
+        google_cloud_project_id,
         args.force,
         args.overwrite_target_fields,
     )

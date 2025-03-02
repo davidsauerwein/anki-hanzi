@@ -1,9 +1,8 @@
-from pathlib import Path
 from typing import Protocol
 
 from google.cloud import translate_v3
 
-from anki_hanzi.google_cloud import language_to_google_language_code, parse_credentials
+from anki_hanzi.google_cloud import language_to_google_language_code
 from anki_hanzi.language import Language
 
 
@@ -17,9 +16,9 @@ class GoogleTranslator(Translator):
     _client: translate_v3.TranslationServiceClient
     _project_id: str
 
-    def __init__(self, application_credentials: Path):
-        credentials, self._project_id = parse_credentials(application_credentials)
-        self._client = translate_v3.TranslationServiceClient(credentials=credentials)
+    def __init__(self, project_id: str):
+        self._project_id = project_id
+        self._client = translate_v3.TranslationServiceClient()
 
     def translate(
         self, text: str, source_language: Language, target_language: Language

@@ -1,10 +1,9 @@
 import random
-from pathlib import Path
 from typing import Protocol
 
 from google.cloud import texttospeech as googletts
 
-from anki_hanzi.google_cloud import language_to_google_language_code, parse_credentials
+from anki_hanzi.google_cloud import language_to_google_language_code
 from anki_hanzi.language import Language
 
 
@@ -16,9 +15,9 @@ class GoogleTextToSpeechSynthesizer(TextToSpeechSynthesizer):
     _client: googletts.TextToSpeechClient
     _project_id: str
 
-    def __init__(self, application_credentials: Path):
-        credentials, self._project_id = parse_credentials(application_credentials)
-        self._client = googletts.TextToSpeechClient(credentials=credentials)
+    def __init__(self, project_id: str):
+        self._project_id = project_id
+        self._client = googletts.TextToSpeechClient()
 
     @staticmethod
     def _language_code_to_voice_name(language_code: str) -> str:
