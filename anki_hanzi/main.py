@@ -1,7 +1,7 @@
 import logging
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import NamedTuple
+from typing import TypedDict
 
 from anki_hanzi.anki_client import AnkiClient, AnkiClientImpl
 from anki_hanzi.processing import process_chinese_vocabulary_note
@@ -52,7 +52,7 @@ parser.add_argument(
 )
 
 
-class ProcessingStats(NamedTuple):
+class ProcessingStats(TypedDict):
     total: int
     modified: int
 
@@ -83,7 +83,10 @@ def process_chinese_vocabulary(
             anki.update_note(note)
             modified += 1
 
-    return ProcessingStats(total, modified)
+    return {
+        "total": total,
+        "modified": modified,
+    }
 
 
 def parse_anki_credentials(anki_credentials: Path) -> tuple[str, str]:
@@ -103,7 +106,7 @@ def run(
     google_application_credentials: Path,
     force: bool,
     overwrite_target_fields: bool,
-) -> None:
+) -> ProcessingStats:
     anki = AnkiClientImpl(anki_collection_path, anki_username, anki_password)
     translator = GoogleTranslator(
         application_credentials=google_application_credentials
@@ -112,7 +115,7 @@ def run(
         application_credentials=google_application_credentials
     )
     anki.sync()
-    total, modified = process_chinese_vocabulary(
+    stats = process_chinese_vocabulary(
         anki=anki,
         deck_name=deck_name,
         translator=translator,
@@ -122,7 +125,8 @@ def run(
     )
     anki.sync()
 
-    logger.info(f"Success: {modified} / {total} notes modified.")
+    logger.info(f"Success: {stats['modified']} / {stats['total']} notes modified.")
+    return stats
 
 
 def main() -> None:
