@@ -2,6 +2,7 @@ from functools import partial
 from typing import Callable
 
 from anki.notes import Note
+from bs4 import BeautifulSoup
 from dragonmapper import hanzi  # type: ignore
 
 from anki_hanzi.anki_client import AnkiClient, escape_media_file_name
@@ -24,6 +25,13 @@ def to_tones(text: str) -> str:
     numbered_pinyin: str = hanzi.to_pinyin(text, accented=False)
     tones = [char for char in numbered_pinyin if char.isdigit()]
     return "".join(tones)
+
+
+def strip_html_tags(text: str) -> str:
+    # Sometimes some html tags stay in the string due to copy-paste. Remove
+    # those as they can end up in unexpected results such as wrong media file
+    # names.
+    return BeautifulSoup(text, "html.parser").get_text()
 
 
 def synthesize(
@@ -66,7 +74,9 @@ def transform_field(
         # Do not overwrite target fields unless explicitly asked.
         return False
 
-    note[target_field] = transformation_function(note[source_field])
+    source_text = note[source_field]
+    source_text = strip_html_tags(source_text)
+    note[target_field] = transformation_function(source_text)
     return True
 
 
