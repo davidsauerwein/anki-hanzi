@@ -42,6 +42,12 @@ def synthesize(
     overwrite_target_field: bool,
 ) -> str:
     text = text.strip()
+    if not text:
+        raise ValueError(
+            "Text to synthesize should contain something. "
+            "Does the input contain odd formatting that causes all contents to get stripped on error?"
+        )
+
     file_name = f"{text}.mp3"
     file_name = escape_media_file_name(file_name)
     result = f"[sound:{file_name}]"
