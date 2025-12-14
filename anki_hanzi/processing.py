@@ -64,6 +64,7 @@ def transform_field(
     transformation_function: Callable[[str], str],
     overwrite_target_field: bool = False,
 ) -> bool:
+    """Take a source_field as input, process its contents with transformation_function and write result to target_field."""
     assert source_field in note and target_field in note
 
     if not note[source_field]:
@@ -80,6 +81,24 @@ def transform_field(
     return True
 
 
+def modify_field(
+    note: Note,
+    field: str,
+    transformation_function: Callable[[str], str],
+) -> bool:
+    """Process contents of field with transformation_function and write result back to the same field."""
+    assert field in note
+
+    if not note[field]:
+        # Ignore empty fields
+        return False
+
+    result = transformation_function(note[field])
+    modified = result != note[field]
+    note[field] = result
+    return modified
+
+
 def process_chinese_vocabulary_note(
     note: Note,
     anki: AnkiClient,
@@ -94,6 +113,7 @@ def process_chinese_vocabulary_note(
     transform = partial(
         transform_field, note=note, overwrite_target_field=overwrite_target_fields
     )
+    modify = partial(modify_field, note=note)
 
     simplified_to_traditional = partial(
         translator.translate,
@@ -119,6 +139,24 @@ def process_chinese_vocabulary_note(
     )
 
     modified = False
+
+    # Strip any HTML tags from text fields that could originate from user input.
+    # Also strip whitespace
+    for field in [
+        "Word (Character)",
+        "Word (Traditional Character)",
+        "Example Sentence - Characters",
+        "Example Sentence - Traditional Characters",
+    ]:
+        modified |= modify(
+            field=field,
+            transformation_function=strip_html_tags,
+        )
+        modified |= modify(
+            field=field,
+            transformation_function=str.strip,
+        )
+
     modified |= transform(
         source_field="Word (Character)",
         target_field="Word (Traditional Character)",
