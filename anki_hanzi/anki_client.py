@@ -123,7 +123,7 @@ class AnkiClientImpl(AnkiClient):
             # From what I have observed this returns NO_CHANGES on every regular sync. Anything else means conflicts
             # which cannot be resolved here.
             raise AnkiClientException(
-                f"Unexpected or unsupported sync result: {sync_result}"
+                f"Unexpected or unsupported sync result: {sync_result.required}"
             )
 
         # Media is synced in the background. That means that the call to sync_collection started the media sync, but
