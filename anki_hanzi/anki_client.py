@@ -97,11 +97,13 @@ class AnkiClientImpl(AnkiClient):
                 auth=self._auth, sync_media=True
             )
 
-        if sync_result.required == sync_result.FULL_DOWNLOAD:
-            # Initial sync. Download everything.
-            logger.info(
-                "Performing initial sync (full download). This may take a while depending on how much media your collection has."
-            )
+        if sync_result.required in [sync_result.FULL_DOWNLOAD, sync_result.FULL_SYNC]:
+            if sync_result.required == sync_result.FULL_DOWNLOAD:
+                logger.info(
+                    "Performing initial sync (full download). This may take a while depending on how much media your collection has."
+                )
+            else:
+                logger.info("Conflict detected. Resolving via full sync (download).")
 
             # We need to re-initialize the auth object using the new endpoint, otherwise we get 400 responses saying
             # "missing original size".
@@ -120,8 +122,8 @@ class AnkiClientImpl(AnkiClient):
                 )
             self._collection.reopen(after_full_sync=True)
         elif sync_result.required != sync_result.NO_CHANGES:
-            # From what I have observed this returns NO_CHANGES on every regular sync. Anything else means conflicts
-            # which cannot be resolved here.
+            # From what I have observed this returns NO_CHANGES on every regular sync. Anything else that hasn't been
+            # handled yet means conflicts which cannot be resolved here.
             raise AnkiClientException(
                 f"Unexpected or unsupported sync result: {sync_result.required}"
             )
