@@ -46,8 +46,9 @@ class AnkiClientException(Exception):
     pass
 
 
-def escape_media_file_name(file_name: str) -> str:
-    return file_name.strip().replace("?", "")
+# Max media filename length enforced by Anki's Rust backend.
+# See rslib/src/sync/media/mod.rs: MAX_MEDIA_FILENAME_LENGTH
+_ANKI_MAX_MEDIA_FILENAME_BYTES = 120
 
 
 class MediaSyncInProgressException(Exception):

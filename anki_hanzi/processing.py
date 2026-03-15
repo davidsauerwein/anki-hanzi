@@ -1,3 +1,4 @@
+import hashlib
 from functools import partial
 from typing import Callable
 
@@ -5,12 +6,21 @@ from anki.notes import Note
 from bs4 import BeautifulSoup
 from dragonmapper import hanzi  # type: ignore
 
-from anki_hanzi.anki_client import AnkiClient, escape_media_file_name
+from anki_hanzi.anki_client import _ANKI_MAX_MEDIA_FILENAME_BYTES, AnkiClient
 from anki_hanzi.language import Language
 from anki_hanzi.text_to_speech import TextToSpeechSynthesizer
 from anki_hanzi.translation import Translator
 
 ANKI_HANZI_TAG = "anki-hanzi"
+
+
+def make_media_file_name(stem: str, extension: str) -> str:
+    stem = stem.strip().replace("?", "")
+    candidate = f"{stem}.{extension}"
+    if len(candidate.encode("utf-8")) <= _ANKI_MAX_MEDIA_FILENAME_BYTES:
+        return candidate
+    digest = hashlib.sha256(stem.encode("utf-8")).hexdigest()[:16]
+    return f"{digest}.{extension}"
 
 
 def to_pinyin(text: str) -> str:
@@ -48,8 +58,7 @@ def synthesize(
             "Does the input contain odd formatting that causes all contents to get stripped on error?"
         )
 
-    file_name = f"{text}.mp3"
-    file_name = escape_media_file_name(file_name)
+    file_name = make_media_file_name(text, "mp3")
     result = f"[sound:{file_name}]"
 
     if anki.media_file_exists(file_name):
