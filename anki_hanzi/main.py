@@ -117,7 +117,7 @@ def run(
 ) -> ProcessingStats:
     anki = AnkiClientImpl(anki_collection_path, anki_username, anki_password)
     translator = GoogleTranslator(google_cloud_project_id)
-    tts_synthesizer = GoogleTextToSpeechSynthesizer(google_cloud_project_id)
+    tts_synthesizer = GoogleTextToSpeechSynthesizer()
 
     anki.sync()
 

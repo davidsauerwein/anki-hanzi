@@ -13,10 +13,8 @@ class TextToSpeechSynthesizer(Protocol):
 
 class GoogleTextToSpeechSynthesizer(TextToSpeechSynthesizer):
     _client: googletts.TextToSpeechClient
-    _project_id: str
 
-    def __init__(self, project_id: str):
-        self._project_id = project_id
+    def __init__(self) -> None:
         self._client = googletts.TextToSpeechClient()
 
     @staticmethod
