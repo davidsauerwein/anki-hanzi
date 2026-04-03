@@ -15,7 +15,7 @@ ANKI_HANZI_TAG = "anki-hanzi"
 
 
 def make_media_file_name(stem: str, extension: str) -> str:
-    stem = stem.strip().replace("?", "")
+    stem = stem.strip().replace("?", "").replace("/", "")
     candidate = f"{stem}.{extension}"
     if len(candidate.encode("utf-8")) <= _ANKI_MAX_MEDIA_FILENAME_BYTES:
         return candidate
